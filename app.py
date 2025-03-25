@@ -9,10 +9,13 @@ CORS(app)  # Allow all origins (restrict in production if needed)
 
 # Load the trained scikit-learn models and scaler
 model_path = os.path.join(os.path.dirname(__file__), 'pond_model.pkl')
-rf_model, gb_model, scaler = joblib.load(model_path)  # Load the tuple (rf_model, gb_model, scaler)
+try:
+    rf_model, gb_model, scaler = joblib.load(model_path)  # Load the tuple (rf_model, gb_model, scaler)
+except Exception as e:
+    raise RuntimeError(f"Failed to load model: {str(e)}")
 
 # Define the endpoint to receive weather parameters and predict DO level
-@app.route('/api/weather', methods=['GET'])
+@app.route('/api/weather', methods=['POST'])
 def weather_data():
     try:
         # Get JSON data from the request
@@ -20,10 +23,10 @@ def weather_data():
 
         # Extract parameters with defaults (aligned with training features)
         temperature = data.get('Temperature', '25')
-        pressure = data.get('Pressure', '1013')  # Adjusted default to a realistic hPa value
-        humidity = data.get('Humidity', '60')    # Adjusted default to a realistic percentage
+        pressure = data.get('Pressure', '1013')
+        humidity = data.get('Humidity', '60')
         delta_temp = data.get('DeltaTemp', '15')
-        days_passed = data.get('DaysPassed', '0')  # Added missing feature
+        days_passed = data.get('DaysPassed', '0')
         wind_speed = data.get('WindSpeed', '15')
         cloud_coverage = data.get('CloudCoverage', '12')
         dew_point = data.get('DewPoint', '54')
@@ -68,7 +71,7 @@ def weather_data():
                 "WindGust": wind_gust,
                 "MoonshineHours": moonshine_hours
             },
-            "prediction": float(final_pred[0]),  # Convert numpy float to Python float
+            "prediction": float(final_pred[0]),
             "message": "Dissolved Oxygen (DO) level prediction generated successfully"
         }
 
