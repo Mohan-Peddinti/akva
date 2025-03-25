@@ -80,12 +80,10 @@ def weather_data():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
-# Optional: Serve a simple homepage
 @app.route('/')
 def home():
     return "Welcome to the AKVA."
 
 if __name__ == '__main__':
-    # Use host 0.0.0.0 and port from environment variable for Render
     port = int(os.getenv("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
